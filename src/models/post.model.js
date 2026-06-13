@@ -11,7 +11,7 @@ const postSchema = new Schema(
             type: String,
             required: true,
             trim: true,
-            maxLength: 280,
+            maxlength: 280,
         },
         likesCount: {
             type: Number,
