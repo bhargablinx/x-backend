@@ -40,9 +40,19 @@ const registerUsr = async (req, res) => {
     }
 };
 
-const loginUsr = (req, res) => {
+const loginUsr = async (req, res) => {
+    const { email, password } = req.body;
+
+    const user = await User.find({ email, password });
+
+    if (user.length === 0)
+        res.status(400).json({
+            data: "Invalid credentials!!",
+        });
+
     res.status(200).json({
         message: "OK",
+        data: "Log In Successful",
     });
 };
 
