@@ -6,6 +6,10 @@ import {
     getPostById,
     deletePost,
 } from "../controllers/post.controller.js";
+import {
+    createComment,
+    getCommentsByPost,
+} from "../controllers/comment.controller.js";
 
 const router = Router();
 
@@ -14,5 +18,8 @@ router.route("/").get(verifyJWT, getAllPosts);
 
 router.route("/:postId").get(verifyJWT, getPostById);
 router.route("/:postId").delete(verifyJWT, deletePost);
+
+router.route("/:postId/comments").post(verifyJWT, createComment);
+router.route("/:postId/comments").get(verifyJWT, getCommentsByPost);
 
 export default router;
