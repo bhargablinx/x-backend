@@ -10,6 +10,7 @@ import {
     createComment,
     getCommentsByPost,
 } from "../controllers/comment.controller.js";
+import { likePost, unlikePost } from "../controllers/like.controller.js";
 
 const router = Router();
 
@@ -21,5 +22,8 @@ router.route("/:postId").delete(verifyJWT, deletePost);
 
 router.route("/:postId/comments").post(verifyJWT, createComment);
 router.route("/:postId/comments").get(verifyJWT, getCommentsByPost);
+
+router.route("/:postId/like").post(verifyJWT, likePost);
+router.route("/:postId/like").delete(verifyJWT, unlikePost);
 
 export default router;
