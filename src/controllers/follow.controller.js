@@ -7,19 +7,27 @@ const followUser = async (req, res) => {
         const followedUserId = req.params.userId;
 
         if (loggedInUserId.toString() === followedUserId)
-            res.status(404).json({
+            return res.status(404).json({
                 message: "Can't self-follow",
             });
 
         const user = await User.findById(followedUserId);
         if (!user)
-            res.status(404).json({
+            return res.status(404).json({
                 message: "User don't exits that you want to follow",
             });
 
         await Follow.create({
             follower: loggedInUserId,
             following: followedUserId,
+        });
+
+        await User.findByIdAndUpdate(followedUserId, {
+            $inc: { followersCount: 1 },
+        });
+
+        await User.findByIdAndUpdate(loggedInUserId, {
+            $inc: { followingCount: 1 },
         });
 
         res.status(200).json({
@@ -65,6 +73,14 @@ const unfollowUser = async (req, res) => {
                 message: "You are not following this user",
             });
         }
+
+        await User.findByIdAndUpdate(followedUserId, {
+            $inc: { followersCount: -1 },
+        });
+
+        await User.findByIdAndUpdate(loggedInUserId, {
+            $inc: { followingCount: -1 },
+        });
 
         res.status(200).json({
             message: "Unfollowed!!",
