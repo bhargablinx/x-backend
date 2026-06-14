@@ -1,4 +1,5 @@
 import Comment from "../models/comment.model.js";
+import Post from "../models/post.model.js";
 
 const createComment = async (req, res) => {
     try {
@@ -17,9 +18,13 @@ const createComment = async (req, res) => {
             content,
         });
 
+        const post = await Post.findById(postId);
+        post.incrementComment(post.commentCount);
+        await post.save({ validateBeforeSave: false });
+
         res.status(200).json({
             message: "added comment",
-            comment,
+            totalComment: post.commentCount,
         });
     } catch (error) {
         console.log(error);
@@ -29,7 +34,11 @@ const createComment = async (req, res) => {
 
 const getCommentsByPost = async (req, res) => {
     try {
-        res.status(200).json({ message: "All comments are shown" });
+        const postId = req.params.postId;
+
+        const allComments = await Comment.find({ post: postId });
+
+        res.status(200).json(allComments);
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Something went wrong" });
