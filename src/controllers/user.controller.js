@@ -95,8 +95,21 @@ const loginUsr = async (req, res) => {
         });
 };
 
-const logoutUsr = (req, res) => {
-    res.send("User logout!!");
+const logoutUsr = async (req, res) => {
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set: {
+                refreshToken: undefined,
+            },
+        },
+        { new: true }
+    );
+
+    res.status(200)
+        .clearCookie("accessToken", { httpOnly: true, secure: true })
+        .clearCookie("refreshToken", { httpOnly: true, secure: true })
+        .json({ message: "User logged out!!" });
 };
 const getUsr = (req, res) => {
     res.send("This is the User!!");
