@@ -77,23 +77,61 @@ const unfollowUser = async (req, res) => {
 
 const getFollowers = async (req, res) => {
     try {
-        res.status(200).json({
-            message: "Unfollowed!!",
+        const userId = req.params.userId;
+
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+
+        const followers = await Follow.find({
+            following: userId,
+        }).populate("follower", "username");
+
+        const followerUsers = followers.map((follow) => follow.follower);
+
+        return res.status(200).json({
+            count: followerUsers.length,
+            followers: followerUsers,
         });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: "Something went wrong" });
+        return res.status(500).json({
+            message: "Internal Server Error",
+        });
     }
 };
 
 const getFollowing = async (req, res) => {
     try {
-        res.status(200).json({
-            message: "Unfollowed!!",
+        const userId = req.params.userId;
+
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+
+        const followings = await Follow.find({
+            follower: userId,
+        }).populate("following", "username");
+
+        const followingUsers = followings.map((follow) => follow.following);
+
+        return res.status(200).json({
+            count: followingUsers.length,
+            followers: followingUsers,
         });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: "Something went wrong" });
+        return res.status(500).json({
+            message: "Internal Server Error",
+        });
     }
 };
 
