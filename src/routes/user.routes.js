@@ -6,6 +6,7 @@ import {
     getUsr,
     deleteUsr,
     getUsrPost,
+    refreshAccessToken,
 } from "../controllers/user.controller.js";
 
 import { verifyJWT } from "../middlewares/authMiddleware.js";
@@ -18,6 +19,7 @@ router.route("/login").post(loginUsr);
 // Secure Routes
 router.route("/logout").post(verifyJWT, logoutUsr);
 router.route("/posts").get(verifyJWT, getUsrPost);
+router.route("/refresh-token").get(refreshAccessToken);
 
 router.route("/:id").get(getUsr);
 router.route("/:id").delete(deleteUsr);

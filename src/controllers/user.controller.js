@@ -111,6 +111,54 @@ const logoutUsr = async (req, res) => {
         .clearCookie("refreshToken", { httpOnly: true, secure: true })
         .json({ message: "User logged out!!" });
 };
+
+const refreshAccessToken = async (req, res) => {
+    try {
+        const clientRefreshToken =
+            req.cookies?.refreshToken || req.body?.refreshToken;
+
+        if (!clientRefreshToken) throw new Error("Token not found");
+
+        // Decode client token
+        const decodedToken = await jwt.verify(
+            clientRefreshToken,
+            process.env.REFRESH_TOKEN_SECRET
+        );
+
+        // search user in db by id
+        const user = await User.findById(decodedToken?._id);
+        if (!user) throw new Error("User not found");
+
+        // verify both tokens
+        if (clientRefreshToken !== user.refreshToken)
+            throw new Error("Token invalid");
+
+        // if verified generate new token
+        const { accessToken, refreshToken } = await generateToken(user._id);
+
+        res.status(200)
+            .cookie("accessToken", accessToken, {
+                httpOnly: true,
+                secure: true,
+            })
+            .cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+                secure: true,
+            })
+            .json({
+                message: "New Tokens generated Successful",
+                accessToken,
+                refreshToken,
+            });
+    } catch (error) {
+        console.log(error);
+
+        res.status(500).json({
+            message: "Unauthorized: Please login to continue",
+        });
+    }
+};
+
 const getUsr = (req, res) => {
     res.send("This is the User!!");
 };
@@ -122,4 +170,12 @@ const getUsrPost = (req, res) => {
     res.send("User: Post!!");
 };
 
-export { registerUsr, loginUsr, logoutUsr, getUsr, deleteUsr, getUsrPost };
+export {
+    registerUsr,
+    loginUsr,
+    logoutUsr,
+    getUsr,
+    deleteUsr,
+    getUsrPost,
+    refreshAccessToken,
+};
