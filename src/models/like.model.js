@@ -18,4 +18,6 @@ const likeSchema = new Schema(
 
 likeSchema.index({ user: 1, post: 1 }, { unique: true }); // One user can like one post only once
 
-export default Like = mongoose.model("Like", likeSchema);
+const Like = mongoose.model("Like", likeSchema);
+
+export default Like;
