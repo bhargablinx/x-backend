@@ -18,9 +18,11 @@ const createComment = async (req, res) => {
             content,
         });
 
-        const post = await Post.findById(postId);
-        post.incrementComment(post.commentCount);
-        await post.save({ validateBeforeSave: false });
+        const post = await Post.findByIdAndUpdate(
+            postId,
+            { $inc: { commentCount: 1 } },
+            { new: true }
+        );
 
         res.status(200).json({
             message: "added comment",
