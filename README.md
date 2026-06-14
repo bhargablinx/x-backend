@@ -18,12 +18,21 @@
 
 ### User Routes
 
-| Endpoint                   | Description                                    |
-| -------------------------- | ---------------------------------------------- |
-| `/user/register`           | Register user                                  |
-| `/user/login`              | Login user                                     |
-| `/user/logout`             | Logout user                                    |
-| `/user/posts`              | Posts created by this user (to be implemented) |
-| `/user/refresh-token`      | Generate new token                             |
-| `/user/delete`             | Delete logged-in user                          |
-| `/user/username/:username` | Search any user                                |
+| Endpoint                   | Description                | Method |
+| -------------------------- | -------------------------- | ------ |
+| `/user/register`           | Register user              | POST   |
+| `/user/login`              | Login user                 | POST   |
+| `/user/logout`             | Logout user                | POST   |
+| `/user/posts`              | Posts created by this user | GET    |
+| `/user/refresh-token`      | Generate new token         | GET    |
+| `/user/delete`             | Delete logged-in user      | DELETE |
+| `/user/username/:username` | Search any user            | GET    |
+
+### Post Routes
+
+| Endpoint        | Description             | Method |
+| --------------- | ----------------------- | ------ |
+| `/post/`        | Create Post             | POST   |
+| `/post/`        | Get every posts created | GET    |
+| `/post/:postId` | Get one post            | GET    |
+| `/post/:postId` | Delete that post        | DELETE |
