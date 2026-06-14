@@ -18,6 +18,7 @@ const generateToken = async (userId) => {
         return { accessToken, refreshToken };
     } catch (error) {
         console.log("Server error: Generating token", error);
+        throw error;
     }
 };
 
@@ -26,11 +27,13 @@ const registerUsr = async (req, res) => {
         const { username, name, email, password, bio, avatar } = req.body;
 
         if (!username || !name || !email || !password)
-            res.status(400).json({ message: "Enter all required fields" });
+            return res
+                .status(400)
+                .json({ message: "Enter all required fields" });
 
         // check if user already exit
         const existingUser = await User.findOne({
-            $or: [{ username }, { email }],
+            $or: [{ username }, { email: email.toLowerCase() }],
         });
         if (existingUser)
             return res.status(400).json({
@@ -43,14 +46,14 @@ const registerUsr = async (req, res) => {
         const user = await User.create({
             username: username.toLowerCase(),
             name,
-            email,
+            email: email.toLowerCase(),
             password,
             bio,
             avatar,
         });
 
         // send to response to client
-        res.status(200).send({
+        res.status(201).send({
             message: "Account Created",
             user,
         });
@@ -62,54 +65,77 @@ const registerUsr = async (req, res) => {
 };
 
 const loginUsr = async (req, res) => {
-    const { email, username, password } = req.body;
+    try {
+        const { email, username, password } = req.body;
 
-    if (!username && !email)
-        return res.status(400).json({
-            message: "Something is missing: username or email!!",
+        if (!username && !email)
+            return res.status(400).json({
+                message: "Something is missing: username or email!!",
+            });
+
+        const user = await User.findOne({
+            $or: [
+                { email: email?.toLowerCase() },
+                { username: username?.toLowerCase() },
+            ],
         });
 
-    const user = await User.findOne({ $or: [{ email }, { username }] });
+        if (!user)
+            return res.status(401).json({
+                message: "Invalid credentials!!",
+            });
 
-    if (!user)
-        return res.status(400).json({
-            message: "Invalid credentials!!",
+        const isPassValid = await user.isPasswordCorrect(password); // user not User to access its methods
+
+        if (!isPassValid)
+            return res.status(401).json({
+                message: "Incorrect Password!!",
+            });
+
+        const { accessToken, refreshToken } = await generateToken(user._id);
+
+        res.status(200)
+            .cookie("accessToken", accessToken, {
+                httpOnly: true,
+                secure: true,
+            })
+            .cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+                secure: true,
+            })
+            .json({
+                message: "Log In Successful",
+                accessToken,
+                refreshToken,
+            });
+    } catch (error) {
+        throw error;
+        return res.status(500).json({
+            message: "Login failed",
         });
-
-    const isPassValid = await user.isPasswordCorrect(password); // user not User to access its methods
-
-    if (!isPassValid)
-        return res.status(401).json({
-            message: "Incorrect Password!!",
-        });
-
-    const { accessToken, refreshToken } = await generateToken(user._id);
-
-    res.status(200)
-        .cookie("accessToken", accessToken, { httpOnly: true, secure: true })
-        .cookie("refreshToken", refreshToken, { httpOnly: true, secure: true })
-        .json({
-            message: "Log In Successful",
-            accessToken,
-            refreshToken,
-        });
+    }
 };
 
 const logoutUsr = async (req, res) => {
-    await User.findByIdAndUpdate(
-        req.user._id,
-        {
-            $set: {
-                refreshToken: undefined,
+    try {
+        await User.findByIdAndUpdate(
+            req.user._id,
+            {
+                $set: {
+                    refreshToken: undefined,
+                },
             },
-        },
-        { new: true }
-    );
+            { new: true }
+        );
 
-    res.status(200)
-        .clearCookie("accessToken", { httpOnly: true, secure: true })
-        .clearCookie("refreshToken", { httpOnly: true, secure: true })
-        .json({ message: "User logged out!!" });
+        res.status(200)
+            .clearCookie("accessToken", { httpOnly: true, secure: true })
+            .clearCookie("refreshToken", { httpOnly: true, secure: true })
+            .json({ message: "User logged out!!" });
+    } catch (error) {
+        throw error;
+        res.status(500).json({ message: "Failed to logout user" });
+    }
 };
 
 const refreshAccessToken = async (req, res) => {
@@ -153,7 +179,7 @@ const refreshAccessToken = async (req, res) => {
     } catch (error) {
         console.log(error);
 
-        res.status(500).json({
+        res.status(401).json({
             message: "Unauthorized: Please login to continue",
         });
     }
@@ -166,7 +192,12 @@ const getUsr = async (req, res) => {
         const user = await User.findOne({ username }).select(
             "-password -refreshToken -email -_id -updatedAt "
         );
-        if (!user) throw new Error("No user with this username");
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
 
         res.json({
             message: `Hi ${username}!!!`,
@@ -174,7 +205,7 @@ const getUsr = async (req, res) => {
         });
     } catch (error) {
         console.log(error);
-        res.status(500).json({
+        res.status(404).json({
             message: `User doesn't exists with this username`,
         });
     }
@@ -192,7 +223,9 @@ const deleteUsr = async (req, res) => {
             .json({ message: "User deleted and cookie cleared!!" });
     } catch (error) {
         console.log(error);
-        res.status(500).json("Failed to delete user");
+        res.status(500).json({
+            message: "Failed to delete user",
+        });
     }
 };
 
