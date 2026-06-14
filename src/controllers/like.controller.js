@@ -27,9 +27,11 @@ const likePost = async (req, res) => {
 
         await Like.create({ user: userId, post: postId });
 
-        const post = await Post.findById(postId);
-        post.incrementLike(post.likesCount);
-        await post.save({ validateBeforeSave: false });
+        await Post.findByIdAndUpdate(
+            postId,
+            { $inc: { likesCount: 1 } },
+            { new: true }
+        );
 
         res.status(200).json({
             message: "post liked!!",
@@ -53,9 +55,11 @@ const unlikePost = async (req, res) => {
 
         await Like.deleteOne({ user: userId, post: postId });
 
-        const post = await Post.findById(postId);
-        post.decrementLike(post.likesCount);
-        await post.save({ validateBeforeSave: false });
+        const post = await Post.findByIdAndUpdate(
+            postId,
+            { $inc: { likesCount: -1 } },
+            { new: true }
+        );
 
         res.status(200).json({
             message: "post un-liked!!",
