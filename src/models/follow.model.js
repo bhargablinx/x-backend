@@ -2,12 +2,12 @@ import mongoose, { Schema } from "mongoose";
 
 const followSchema = new Schema(
     {
-        follower: {
+        following: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true,
         },
-        following: {
+        follower: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true,
@@ -18,4 +18,6 @@ const followSchema = new Schema(
 
 followSchema.index({ follower: 1, following: 1 }, { unique: true });
 
-export default Follow = mongoose.model("Follow", followSchema);
+const Follow = mongoose.model("Follow", followSchema);
+
+export default Follow;
