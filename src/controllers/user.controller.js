@@ -2,6 +2,25 @@ import jwt from "jsonwebtoken";
 import "dotenv/config";
 import User from "../models/user.model.js";
 
+const generateToken = async (userId) => {
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        const accessToken = await user.generateAccessToken();
+        const refreshToken = await user.generateRefreshToken();
+
+        user.refreshToken = refreshToken;
+        await user.save({ validateBeforeSave: false });
+
+        return { accessToken, refreshToken };
+    } catch (error) {
+        console.log("Server error: Generating token", error);
+    }
+};
+
 const registerUsr = async (req, res) => {
     try {
         const { username, name, email, password, bio, avatar } = req.body;
@@ -10,17 +29,19 @@ const registerUsr = async (req, res) => {
             res.status(400).json({ message: "Enter all required fields" });
 
         // check if user already exit
-        const dbRes = await User.find({ email });
-        if (dbRes.length !== 0)
+        const existingUser = await User.findOne({
+            $or: [{ username }, { email }],
+        });
+        if (existingUser)
             return res.status(400).json({
-                message: "User already exits!",
+                message: "User already exits! with username or email!!",
             });
 
         // check of avatar -> if available handle later (not now)
 
         // create a user and push to db
         const user = await User.create({
-            username,
+            username: username.toLowerCase(),
             name,
             email,
             password,
@@ -41,19 +62,37 @@ const registerUsr = async (req, res) => {
 };
 
 const loginUsr = async (req, res) => {
-    const { email, password } = req.body;
+    const { email, username, password } = req.body;
 
-    const user = await User.find({ email, password });
-
-    if (user.length === 0)
-        res.status(400).json({
-            data: "Invalid credentials!!",
+    if (!username && !email)
+        return res.status(400).json({
+            message: "Something is missing: username or email!!",
         });
 
-    res.status(200).json({
-        message: "OK",
-        data: "Log In Successful",
-    });
+    const user = await User.findOne({ $or: [{ email }, { username }] });
+
+    if (!user)
+        return res.status(400).json({
+            message: "Invalid credentials!!",
+        });
+
+    const isPassValid = await user.isPasswordCorrect(password); // user not User to access its methods
+
+    if (!isPassValid)
+        return res.status(401).json({
+            message: "Incorrect Password!!",
+        });
+
+    const { accessToken, refreshToken } = await generateToken(user._id);
+
+    res.status(200)
+        .cookie("accessToken", accessToken, { httpOnly: true, secure: true })
+        .cookie("refreshToken", refreshToken, { httpOnly: true, secure: true })
+        .json({
+            message: "Log In Successful",
+            accessToken,
+            refreshToken,
+        });
 };
 
 const logoutUsr = (req, res) => {
