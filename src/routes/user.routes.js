@@ -8,13 +8,18 @@ import {
     getUsrPost,
 } from "../controllers/user.controller.js";
 
+import { verifyJWT } from "../middlewares/authMiddleware.js";
+
 const router = Router();
 
 router.route("/register").post(registerUsr);
 router.route("/login").post(loginUsr);
-router.route("/logout").post(logoutUsr);
+
+// Secure Routes
+router.route("/logout").post(verifyJWT, logoutUsr);
+router.route("/posts").get(verifyJWT, getUsrPost);
+
 router.route("/:id").get(getUsr);
 router.route("/:id").delete(deleteUsr);
-router.route("/posts").get(getUsrPost);
 
 export default router;
