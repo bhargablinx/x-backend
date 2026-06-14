@@ -4,6 +4,7 @@ import "dotenv/config";
 import cookieParser from "cookie-parser";
 import userRouter from "./routes/user.routes.js";
 import postRouter from "./routes/post.routes.js";
+import feedRouter from "./routes/feed.routes.js";
 
 const app = express();
 
@@ -21,5 +22,6 @@ app.use(cookieParser());
 // Routes
 app.use("/user", userRouter);
 app.use("/post", postRouter);
+app.use("/feed", feedRouter);
 
 export { app };
