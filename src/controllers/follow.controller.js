@@ -41,6 +41,31 @@ const followUser = async (req, res) => {
 
 const unfollowUser = async (req, res) => {
     try {
+        const loggedInUserId = req.user._id;
+        const followedUserId = req.params.userId;
+
+        if (loggedInUserId.toString() === followedUserId)
+            return res.status(404).json({
+                message: "Can't self-unfollow",
+            });
+
+        const user = await User.findById(followedUserId);
+        if (!user)
+            return res.status(404).json({
+                message: "User don't exits that you want to unfollow",
+            });
+
+        const deletedFollow = await Follow.findOneAndDelete({
+            follower: loggedInUserId,
+            following: followedUserId,
+        });
+
+        if (!deletedFollow) {
+            return res.status(404).json({
+                message: "You are not following this user",
+            });
+        }
+
         res.status(200).json({
             message: "Unfollowed!!",
         });
