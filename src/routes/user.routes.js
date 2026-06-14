@@ -8,6 +8,12 @@ import {
     getUsrPost,
     refreshAccessToken,
 } from "../controllers/user.controller.js";
+import {
+    followUser,
+    unfollowUser,
+    getFollowers,
+    getFollowing,
+} from "../controllers/follow.controller.js";
 
 import { verifyJWT } from "../middlewares/authMiddleware.js";
 
@@ -25,5 +31,10 @@ router.route("/delete").delete(verifyJWT, deleteUsr);
 
 // Dynamic Routes
 router.route("/username/:username").get(getUsr);
+router.route("/:userId/follow").post(verifyJWT, followUser);
+router.route("/:userId/follow").delete(verifyJWT, unfollowUser);
+
+router.route("/:userId/followers").get(getFollowers);
+router.route("/:userId/followings").get(getFollowing);
 
 export default router;
