@@ -25,18 +25,6 @@ const postSchema = new Schema(
     { timestamps: true }
 );
 
-postSchema.methods.incrementComment = function (oldCount) {
-    return (this.commentCount = oldCount + 1);
-};
-
-postSchema.methods.incrementLike = function (oldCount) {
-    return (this.likesCount = oldCount + 1);
-};
-
-postSchema.methods.decrementLike = function (oldCount) {
-    return (this.likesCount = oldCount - 1);
-};
-
 const Post = mongoose.model("Post", postSchema);
 
 export default Post;
