@@ -25,6 +25,10 @@ const postSchema = new Schema(
     { timestamps: true }
 );
 
+postSchema.methods.incrementComment = function (oldCount) {
+    return (this.commentCount = oldCount + 1);
+};
+
 const Post = mongoose.model("Post", postSchema);
 
 export default Post;
