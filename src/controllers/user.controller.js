@@ -159,9 +159,27 @@ const refreshAccessToken = async (req, res) => {
     }
 };
 
-const getUsr = (req, res) => {
-    res.send("This is the User!!");
+const getUsr = async (req, res) => {
+    try {
+        const username = req.params.username;
+
+        const user = await User.findOne({ username }).select(
+            "-password -refreshToken -email -_id -updatedAt "
+        );
+        if (!user) throw new Error("No user with this username");
+
+        res.json({
+            message: `Hi ${username}!!!`,
+            user,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: `User doesn't exists with this username`,
+        });
+    }
 };
+
 const deleteUsr = (req, res) => {
     res.send("User deleted!!");
 };

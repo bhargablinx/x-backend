@@ -13,6 +13,7 @@ import { verifyJWT } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 
+// Static Routes
 router.route("/register").post(registerUsr);
 router.route("/login").post(loginUsr);
 
@@ -21,7 +22,8 @@ router.route("/logout").post(verifyJWT, logoutUsr);
 router.route("/posts").get(verifyJWT, getUsrPost);
 router.route("/refresh-token").get(refreshAccessToken);
 
-router.route("/:id").get(getUsr);
+// Dynamic Routes
+router.route("/username/:username").get(getUsr);
 router.route("/:id").delete(deleteUsr);
 
 export default router;
