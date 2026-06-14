@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 import User from "../models/user.model.js";
+import Post from "../models/post.model.js";
 
 const generateToken = async (userId) => {
     try {
@@ -229,8 +230,16 @@ const deleteUsr = async (req, res) => {
     }
 };
 
-const getUsrPost = (req, res) => {
-    res.send("User: Post!!");
+const getUsrPost = async (req, res) => {
+    try {
+        const useId = req.user._id;
+        const postByUser = await Post.find({ author: useId });
+
+        res.status(200).json(postByUser);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Error finding post" });
+    }
 };
 
 export {
