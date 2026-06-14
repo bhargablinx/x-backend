@@ -21,9 +21,9 @@ router.route("/login").post(loginUsr);
 router.route("/logout").post(verifyJWT, logoutUsr);
 router.route("/posts").get(verifyJWT, getUsrPost);
 router.route("/refresh-token").get(refreshAccessToken);
+router.route("/delete").delete(verifyJWT, deleteUsr);
 
 // Dynamic Routes
 router.route("/username/:username").get(getUsr);
-router.route("/:id").delete(deleteUsr);
 
 export default router;

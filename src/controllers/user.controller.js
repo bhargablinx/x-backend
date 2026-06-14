@@ -180,8 +180,20 @@ const getUsr = async (req, res) => {
     }
 };
 
-const deleteUsr = (req, res) => {
-    res.send("User deleted!!");
+const deleteUsr = async (req, res) => {
+    try {
+        const user = req.user;
+
+        await User.findByIdAndDelete(user._id);
+
+        res.status(200)
+            .clearCookie("accessToken", { httpOnly: true, secure: true })
+            .clearCookie("refreshToken", { httpOnly: true, secure: true })
+            .json({ message: "User deleted and cookie cleared!!" });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json("Failed to delete user");
+    }
 };
 
 const getUsrPost = (req, res) => {
