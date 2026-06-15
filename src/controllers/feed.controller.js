@@ -3,9 +3,8 @@ import Post from "../models/post.model.js";
 
 const homeFeed = async (req, res) => {
     try {
-        res.status(200).json({
-            message: "Home feed",
-        });
+        const posts = await Post.find().sort({ createdAt: -1 });
+        res.status(200).json(posts);
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: "Something went wrong" });
