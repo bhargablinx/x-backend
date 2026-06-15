@@ -151,4 +151,34 @@ const getFollowing = async (req, res) => {
     }
 };
 
+const removeFollower = async (req, res) => {
+    try {
+        const userId = req.user._id; // logged-in user
+        const targetUserId = req.params.targetUserId; // follower to remove from frontend
+
+        if (targetUserId === userId.toString()) {
+            return res.status(400).json({
+                message: "Cannot remove yourself as a follower",
+            });
+        }
+
+        await Follow.findOneAndDelete({
+            follower: targetUserId,
+            following: userId,
+        });
+
+        if (!follow) {
+            return res.status(404).json({
+                message: "User is not following you",
+            });
+        }
+
+        res.status(200).json({
+            message: "Removed follower",
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to remove follower" });
+    }
+};
+
 export { followUser, unfollowUser, getFollowers, getFollowing };
