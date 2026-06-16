@@ -162,7 +162,7 @@ const removeFollower = async (req, res) => {
             });
         }
 
-        await Follow.findOneAndDelete({
+        const follow = await Follow.findOneAndDelete({
             follower: targetUserId,
             following: userId,
         });
@@ -173,12 +173,23 @@ const removeFollower = async (req, res) => {
             });
         }
 
+        await Promise.all([
+            User.findByIdAndUpdate(userId, {
+                $inc: { followersCount: -1 },
+            }),
+            User.findByIdAndUpdate(targetUserId, {
+                $inc: { followingCount: -1 },
+            }),
+        ]);
+
         res.status(200).json({
             message: "Removed follower",
         });
     } catch (error) {
+        console.log(error);
+
         res.status(500).json({ message: "Failed to remove follower" });
     }
 };
 
-export { followUser, unfollowUser, getFollowers, getFollowing };
+export { followUser, unfollowUser, getFollowers, getFollowing, removeFollower };
