@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import "dotenv/config";
 import User from "../models/user.model.js";
 import Post from "../models/post.model.js";
+import { uploadToCloudinary } from "../utils/uploadToCloudinary.js";
 
 const generateToken = async (userId) => {
     try {
@@ -25,7 +26,8 @@ const generateToken = async (userId) => {
 
 const registerUsr = async (req, res) => {
     try {
-        const { username, name, email, password, bio, avatar } = req.body;
+        const { username, name, email, password, bio } = req.body;
+        const avatarPath = req.file.path;
 
         if (!username || !name || !email || !password)
             return res
@@ -42,6 +44,8 @@ const registerUsr = async (req, res) => {
             });
 
         // check of avatar -> if available handle later (not now)
+        const cloudinaryResponse = await uploadToCloudinary(avatarPath);
+        const avatar = cloudinaryResponse.url;
 
         // create a user and push to db
         const user = await User.create({
@@ -59,6 +63,8 @@ const registerUsr = async (req, res) => {
             user,
         });
     } catch (error) {
+        console.log(error);
+
         res.status(500).send({
             message: "Error registering user!!",
         });
