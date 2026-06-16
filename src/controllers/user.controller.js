@@ -29,6 +29,10 @@ const registerUsr = async (req, res) => {
         const { username, name, email, password, bio } = req.body;
         const avatarPath = req.file.path;
 
+        if (!avatarPath) {
+            return res.status(404).json({ message: "Avatar is missing" });
+        }
+
         if (!username || !name || !email || !password)
             return res
                 .status(400)
