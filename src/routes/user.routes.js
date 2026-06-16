@@ -16,13 +16,13 @@ import {
 } from "../controllers/follow.controller.js";
 
 import { removeFollower } from "../controllers/follow.controller.js";
-
+import { upload } from "../middlewares/multerMiddleware.js";
 import { verifyJWT } from "../middlewares/authMiddleware.js";
 
 const router = Router();
 
 // Static Routes
-router.route("/register").post(registerUsr);
+router.route("/register").post(upload.single("avatar"), registerUsr);
 router.route("/login").post(loginUsr);
 
 // Secure Routes
