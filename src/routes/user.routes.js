@@ -15,6 +15,8 @@ import {
     getFollowing,
 } from "../controllers/follow.controller.js";
 
+import { removeFollower } from "../controllers/follow.controller.js";
+
 import { verifyJWT } from "../middlewares/authMiddleware.js";
 
 const router = Router();
@@ -33,6 +35,7 @@ router.route("/delete").delete(verifyJWT, deleteUsr);
 router.route("/username/:username").get(getUsr);
 router.route("/:userId/follow").post(verifyJWT, followUser);
 router.route("/:userId/follow").delete(verifyJWT, unfollowUser);
+router.route("/followers/:targetUserId").delete(verifyJWT, removeFollower);
 
 router.route("/:userId/followers").get(getFollowers);
 router.route("/:userId/followings").get(getFollowing);
